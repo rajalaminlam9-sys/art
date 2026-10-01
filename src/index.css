@@ -1,20 +1,29 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: 'Roboto', 'Arial', sans-serif;
-  --font-mono: 'Roboto', 'Arial', sans-serif;
-}
-
 :root {
   color-scheme: light !important;
-  font-family: 'Roboto', Arial, sans-serif;
 }
 
-html, body, #root, input, textarea, select, button {
+html, body {
   background-color: #ffffff !important;
   color: #18181b !important;
   min-height: 100vh;
-  font-family: 'Roboto', Arial, sans-serif !important;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+#root {
+  background-color: #ffffff !important;
+  color: #18181b !important;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Light museum custom scrollbars */
@@ -34,25 +43,4 @@ html, body, #root, input, textarea, select, button {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1aa;
-}
-
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #printable-certificate, #printable-certificate * {
-    visibility: visible;
-  }
-  #printable-certificate {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 24px;
-    background: white !important;
-    color: black !important;
-    box-shadow: none !important;
-    border: 2px solid #18181b !important;
-  }
 }

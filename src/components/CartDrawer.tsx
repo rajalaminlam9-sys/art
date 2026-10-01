@@ -21,7 +21,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Dark overlay backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+        className="fixed inset-0 bg-black/50 transition-opacity duration-200"
         onClick={onClose}
         aria-hidden="true"
       />

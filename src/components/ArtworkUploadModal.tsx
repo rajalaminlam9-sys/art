@@ -37,7 +37,7 @@ export const ArtworkUploadModal: React.FC<ArtworkUploadModalProps> = ({
   if (!currentArtistProfile || currentArtistProfile.status !== 'approved') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+        <div className="fixed inset-0 bg-black/50" onClick={onClose} />
         <div className="relative w-full max-w-md bg-white border border-amber-200 rounded-2xl p-6 text-zinc-900 z-10 shadow-2xl">
           <button onClick={onClose} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-950">
             <X className="w-5 h-5" />
@@ -142,7 +142,7 @@ export const ArtworkUploadModal: React.FC<ArtworkUploadModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
 
       <div className="relative w-full max-w-2xl bg-white border border-zinc-200 rounded-2xl shadow-2xl p-6 sm:p-8 z-10 text-zinc-900 max-h-[90vh] overflow-y-auto">
         <button

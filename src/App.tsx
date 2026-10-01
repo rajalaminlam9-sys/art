@@ -51,7 +51,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-zinc-900 relative selection:bg-zinc-200 selection:text-zinc-900">
+    <div className="min-h-screen flex flex-col bg-white text-zinc-900 relative selection:bg-zinc-200 selection:text-zinc-900 w-full max-w-full overflow-x-hidden">
       
       {/* Top Navbar */}
       <Navbar
@@ -96,7 +96,7 @@ const MainLayout: React.FC = () => {
       />
 
       {/* Main Page Content */}
-      <main className="flex-1 w-full bg-white">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden bg-white">
         {currentView === 'home' && (
           <HomePage
             onOpenAuth={() => handleOpenAuth('register')}
@@ -144,12 +144,12 @@ const MainLayout: React.FC = () => {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 ${
+            className={`pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl border shadow-xl bg-white transition-all duration-300 ${
               toast.type === 'success'
-                ? 'bg-white/95 border-emerald-300 text-emerald-800'
+                ? 'border-emerald-300 text-emerald-800'
                 : toast.type === 'error'
-                ? 'bg-white/95 border-rose-300 text-rose-800'
-                : 'bg-white/95 border-sky-300 text-sky-800'
+                ? 'border-rose-300 text-rose-800'
+                : 'border-sky-300 text-sky-800'
             }`}
           >
             {toast.type === 'success' ? (

@@ -67,7 +67,7 @@ export const ArtistProfilePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 absolute top-6 left-0 right-0">
           <button
             onClick={() => navigate('artists')}
-            className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-white/90 hover:bg-white backdrop-blur-md text-zinc-800 text-xs font-semibold shadow-sm transition-colors"
+            className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-white hover:bg-zinc-100 text-zinc-800 text-xs font-semibold shadow-sm transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Artists Directory

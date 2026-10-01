@@ -635,7 +635,7 @@ export const AdminDashboardPage: React.FC = () => {
       {rejectModalArtist && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50"
             onClick={() => setRejectModalArtist(null)}
           />
           <div className="relative w-full max-w-md bg-white border border-zinc-200 rounded-2xl p-6 text-zinc-900 z-10 space-y-4 shadow-2xl">

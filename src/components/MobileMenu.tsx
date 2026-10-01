@@ -50,13 +50,13 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     <div className="fixed inset-0 z-50 flex">
       {/* Dark Backdrop Overlay */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
+        className="fixed inset-0 bg-black/50 transition-opacity duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Slide-out Menu Panel (Slides from LEFT to RIGHT) */}
-      <div className="relative w-4/5 max-w-xs sm:max-w-sm bg-white border-r border-zinc-200 h-full flex flex-col z-10 shadow-2xl transform transition-transform duration-300 ease-out translate-x-0">
+      {/* Slide-out Menu Panel */}
+      <div className="relative w-4/5 max-w-xs sm:max-w-sm bg-white border-r border-zinc-200 h-full flex flex-col z-10 shadow-2xl">
         
         {/* Top Header */}
         <div className="flex items-center justify-between p-5 border-b border-zinc-200">

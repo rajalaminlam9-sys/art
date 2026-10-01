@@ -41,7 +41,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 Curated International Digital Art Platform
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-950 leading-[1.1] text-balance">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-950 leading-[1.1]">
                 Discover Art Beyond Imagination.
               </h1>
 
@@ -92,7 +92,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Right Column: Hero Spotlight Canvas */}
-            <div className="lg:col-span-6 relative">
+            <div className="lg:col-span-6 relative overflow-hidden rounded-2xl">
               <div className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xl bg-white group p-3">
                 <div className="aspect-[16/10] rounded-xl overflow-hidden bg-zinc-100">
                   <img

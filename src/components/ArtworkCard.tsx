@@ -70,10 +70,10 @@ export const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, onQuickView }
           <button
             onClick={handleToggleWishlist}
             aria-label={inWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
-            className={`p-2 rounded-full backdrop-blur-md transition-colors shadow-sm ${
+            className={`p-2 rounded-full transition-colors shadow-sm ${
               inWishlist
                 ? 'bg-rose-500 text-white'
-                : 'bg-white/80 text-zinc-700 hover:text-zinc-950 hover:bg-white'
+                : 'bg-white text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100'
             }`}
           >
             <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-current' : ''}`} />
