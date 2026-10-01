@@ -57,6 +57,8 @@ export interface Artwork {
   category: string;
   tags: string[];
   copyright: string;
+  sha256Hash?: string;
+  registrationNumber?: string;
   createdAt: string;
   updatedAt: string;
   status: 'published' | 'draft' | 'hidden';
