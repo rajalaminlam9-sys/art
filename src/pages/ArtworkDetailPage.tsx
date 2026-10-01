@@ -11,10 +11,6 @@ import {
   ArrowRight,
   Link2,
   Copy,
-  Mail,
-  Award,
-  FileCheck,
-  Lock,
 } from 'lucide-react';
 import { ArtworkCard } from '../components/ArtworkCard';
 import { AuthorshipEvidenceModal } from '../components/AuthorshipEvidenceModal';
@@ -42,7 +38,6 @@ export const ArtworkDetailPage: React.FC<ArtworkDetailPageProps> = ({
 
   const [copiedShare, setCopiedShare] = useState(false);
   const [evidenceModalOpen, setEvidenceModalOpen] = useState(false);
-  const [copiedCitation, setCopiedCitation] = useState(false);
 
   const artwork = artworks.find((a) => a.id === selectedArtworkId) || artworks[0];
 
@@ -83,34 +78,6 @@ export const ArtworkDetailPage: React.FC<ArtworkDetailPageProps> = ({
         message: `${productUrl} copied to clipboard.`,
       });
       setTimeout(() => setCopiedShare(false), 2500);
-    }
-  };
-
-  const handleCopyLegalCitation = () => {
-    const citation = `OFFICIAL ARTNOVA EVIDENCE OF COPYRIGHT OWNERSHIP & PRIOR PUBLICATION
-======================================================
-Certificate / Registry ID: ${artwork.registrationNumber || `ART-REG-${artwork.id.toUpperCase()}`}
-Title: "${artwork.title}"
-Registered Creator & Author: ${artwork.artistName}
-Verified Contact Email: ${artwork.artistEmail}
-Statutory Copyright Notice: ${artwork.copyright}
-Prior Publication Timestamp: ${new Date(artwork.createdAt).toUTCString()}
-Digital Master SHA-256 Fingerprint: ${artwork.sha256Hash || 'f89a2b53e7c81d4a02d8f99e314a5d89b1c70e2814d9b4f0567e91a3c749b5d2'}
-Canonical Evidence URL: ${productUrl}
-
-LEGAL PRIMA FACIE DECLARATION:
-This permanent digital record establishes prima facie evidence of copyright ownership and prior art under the Berne Convention for the Protection of Literary and Artistic Works and the Digital Millennium Copyright Act (17 U.S.C. § 512). Authorized for inclusion in formal DMCA takedown notices and infringement proceedings.
-======================================================`;
-
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(citation);
-      setCopiedCitation(true);
-      addToast({
-        type: 'success',
-        title: 'Legal Citation Copied',
-        message: 'Court-admissible copyright evidence copied for DMCA notice.',
-      });
-      setTimeout(() => setCopiedCitation(false), 2800);
     }
   };
 
@@ -223,32 +190,21 @@ This permanent digital record establishes prima facie evidence of copyright owne
         {/* Left Column (Desktop 7 cols): 3. Artist Info Box, then Description & Tags */}
         <div className="lg:col-span-7 space-y-6">
           
-          {/* 3. ARTIST INFO BOX (Legal Authorship & Provenance Information) */}
+          {/* 3. ARTIST INFO BOX (Then Artist Info Box) */}
           <div className="p-6 bg-zinc-50 border border-zinc-200 rounded-2xl space-y-4 shadow-xs">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-zinc-200">
-              <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                Verified Legal Authorship & Copyright Registry
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Artist & Provenance Information
               </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setEvidenceModalOpen(true)}
-                  className="text-xs font-semibold text-zinc-800 hover:text-zinc-950 bg-white hover:bg-zinc-100 px-2.5 py-1 rounded-lg border border-zinc-200 transition-colors flex items-center gap-1.5 shadow-2xs"
-                  title="View official legal evidence certificate for copyright enforcement"
-                >
-                  <FileCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Legal Evidence Record</span>
-                </button>
-                <button
-                  onClick={() =>
-                    navigate('artist-profile', { artistId: artwork.artistId })
-                  }
-                  className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors flex items-center gap-1"
-                >
-                  <span>Profile</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              <button
+                onClick={() =>
+                  navigate('artist-profile', { artistId: artwork.artistId })
+                }
+                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors flex items-center gap-1"
+              >
+                View Full Profile
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             <div className="flex items-start gap-4">
@@ -265,16 +221,12 @@ This permanent digital record establishes prima facie evidence of copyright owne
               </div>
 
               <div className="space-y-1.5 flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-xl font-bold text-zinc-950 tracking-tight">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-zinc-950 truncate">
                     {artwork.artistName}
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-emerald-700" />
-                    Verified Creator & Sole Copyright Owner
-                  </span>
-                  <span className="text-[10px] font-mono text-zinc-600 bg-zinc-200/80 px-2 py-0.5 rounded font-semibold">
-                    {artwork.registrationNumber || `REG-${artwork.artistId.toUpperCase()}`}
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                    Verified Artist
                   </span>
                 </div>
 
@@ -282,79 +234,15 @@ This permanent digital record establishes prima facie evidence of copyright owne
                   {artistProfile?.bio || `Independent digital artist specializing in curated fine art masterworks on Artnova.`}
                 </p>
 
-                {/* Evidentiary Metadata Container (Contact Mail & Copyright) */}
-                <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-zinc-700">
-                  <span className="flex items-center gap-1.5 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-2xs">
-                    <Mail className="w-3.5 h-3.5 text-zinc-400" />
-                    <span className="text-zinc-500">Official Contact & Licensing:</span>
-                    <a
-                      href={`mailto:${artwork.artistEmail}?subject=Artnova%20Copyright%20Inquiry%20-%20${encodeURIComponent(artwork.title)}`}
-                      className="text-zinc-950 font-semibold hover:text-emerald-700 underline underline-offset-2"
-                    >
-                      {artwork.artistEmail}
-                    </a>
-                  </span>
-
-                  <span className="text-zinc-300" aria-hidden="true">·</span>
-
-                  <span className="flex items-center gap-1.5 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-2xs">
-                    <Award className="w-3.5 h-3.5 text-amber-600" />
-                    <span className="text-zinc-500">Statutory Copyright:</span>
-                    <strong className="text-zinc-950 font-bold">{artwork.copyright}</strong>
-                    <span className="text-[10px] text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded font-medium border border-emerald-200 ml-1">
-                      Berne & DMCA Enforced
-                    </span>
-                  </span>
+                <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-zinc-500">
+                  <span>Contact: <strong className="text-zinc-700 font-medium">{artwork.artistEmail}</strong></span>
+                  <span>·</span>
+                  <span>Copyright: <strong className="text-zinc-700 font-medium">{artwork.copyright}</strong></span>
                 </div>
               </div>
             </div>
 
-            {/* Evidentiary Legal Notice & Forensic Ledger Box */}
-            <div className="p-4 bg-white border border-zinc-200 rounded-xl space-y-3 text-xs font-['Roboto',Arial,sans-serif]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-zinc-100 text-[11px] text-zinc-500 font-['Roboto',Arial,sans-serif]">
-                <span className="flex items-center gap-1.5 font-['Roboto',Arial,sans-serif]">
-                  <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-                  Prior Publication Date: <strong className="text-zinc-900 font-semibold font-['Roboto',Arial,sans-serif]">{new Date(artwork.createdAt).toUTCString()}</strong>
-                </span>
-                <span className="flex items-center gap-1.5 font-['Roboto',Arial,sans-serif]">
-                  <Lock className="w-3.5 h-3.5 text-zinc-400" />
-                  SHA-256 Hash: <strong className="text-zinc-900 font-semibold truncate max-w-[170px] select-all font-['Roboto',Arial,sans-serif]">{artwork.sha256Hash || 'f89a2b53e7c81d4a02d8f99e314a5d89b1c70e2814d9b4f0567e91a3c749b5d2'}</strong>
-                </span>
-              </div>
-
-              <div className="text-[11px] text-zinc-600 leading-relaxed font-['Roboto',Arial,sans-serif]">
-                <strong className="text-zinc-900 font-semibold font-['Roboto',Arial,sans-serif]">Legal Evidence of Ownership Notice:</strong> This permanent artwork page (<span className="text-zinc-800 font-medium font-['Roboto',Arial,sans-serif]">{productUrl}</span>) serves as timestamped, admissible prima facie evidence under the <strong className="font-['Roboto',Arial,sans-serif]">Berne Convention for the Protection of Literary and Artistic Works</strong> and the <strong className="font-['Roboto',Arial,sans-serif]">Digital Millennium Copyright Act (DMCA, 17 U.S.C. § 512)</strong>. If this artwork is reproduced, republished, or scraped without license, the artist may cite this verified URL and SHA-256 fingerprint in formal DMCA takedown demands and statutory infringement litigation.
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] font-['Roboto',Arial,sans-serif]">
-                <button
-                  onClick={() => setEvidenceModalOpen(true)}
-                  className="font-semibold text-emerald-800 hover:text-emerald-950 flex items-center gap-1.5 underline underline-offset-2 font-['Roboto',Arial,sans-serif]"
-                >
-                  <FileCheck className="w-3.5 h-3.5" />
-                  View Official Certificate of Authorship (PDF/Print)
-                </button>
-
-                <button
-                  onClick={handleCopyLegalCitation}
-                  className="font-semibold text-zinc-700 hover:text-zinc-950 flex items-center gap-1.5 hover:underline font-['Roboto',Arial,sans-serif]"
-                >
-                  {copiedCitation ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span className="text-emerald-700">Citation Copied</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy Legal DMCA Citation</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-zinc-500 pt-1">
+            <p className="text-[11px] text-zinc-500 pt-3 border-t border-zinc-200">
               Purchasing grants verified digital collector display and non-exclusive reproduction rights. Commercial resale without artist permission is strictly prohibited.
             </p>
           </div>
@@ -503,16 +391,31 @@ This permanent digital record establishes prima facie evidence of copyright owne
             </div>
 
             {/* License & Provenance guarantee */}
-            <div className="pt-3 border-t border-zinc-200 flex items-start gap-2.5 text-[11px] text-zinc-500">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <span>
-                Certified archival license included. Instant download link in My Purchases upon payment.
-              </span>
+            <div className="pt-3 border-t border-zinc-200 flex flex-col gap-2 text-[11px] text-zinc-500">
+              <div className="flex items-start gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  Certified archival license included. Instant download link in My Purchases upon payment.
+                </span>
+              </div>
+              <button
+                onClick={() => setEvidenceModalOpen(true)}
+                className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold text-left underline underline-offset-2 flex items-center gap-1 mt-1"
+              >
+                View Authorship Evidence & Provenance
+              </button>
             </div>
           </div>
         </div>
 
       </div>
+
+      {/* Authorship Evidence Modal */}
+      <AuthorshipEvidenceModal
+        isOpen={evidenceModalOpen}
+        onClose={() => setEvidenceModalOpen(false)}
+        artwork={artwork}
+      />
 
       {/* More Works by this Artist */}
       {artistOtherWorks.length > 0 && (
@@ -536,15 +439,6 @@ This permanent digital record establishes prima facie evidence of copyright owne
           </div>
         </section>
       )}
-
-      {/* Official Authorship & Legal Provenance Certificate Modal */}
-      <AuthorshipEvidenceModal
-        isOpen={evidenceModalOpen}
-        onClose={() => setEvidenceModalOpen(false)}
-        artwork={artwork}
-        artistProfile={artistProfile}
-        productUrl={productUrl}
-      />
 
     </div>
   );
