@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" class="light" style="color-scheme: light; background-color: #ffffff; color: #18181b;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Artnova - Premium Digital Art Marketplace</title>
+    <meta name="description" content="Discover, collect, and sell original digital art from world-class independent artists." />
+    <meta property="og:title" content="Artnova - Premium Digital Art Marketplace" />
+    <meta property="og:description" content="Discover, collect, and sell original digital art from world-class independent artists." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        try {
+          localStorage.removeItem('artnova_theme');
+          localStorage.removeItem('artnova_theme_v2');
+          localStorage.setItem('artnova_theme_v2', 'light');
+        } catch (e) {}
+        if (document.documentElement) {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+          document.documentElement.style.colorScheme = 'light';
+          document.documentElement.style.backgroundColor = '#ffffff';
+        }
+      })();
+    </script>
+    <style>
+      :root {
+        color-scheme: light !important;
+      }
+      html, body, #root {
+        background-color: #ffffff !important;
+        color: #18181b !important;
+      }
+    </style>
+  </head>
+  <body class="bg-white text-zinc-900 font-sans antialiased selection:bg-zinc-200 selection:text-zinc-900 min-h-screen" style="background-color: #ffffff; color: #18181b;">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

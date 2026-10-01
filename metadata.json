@@ -1,0 +1,6 @@
+{
+  "name": "Artnova - Premium Digital Art Marketplace",
+  "description": "Discover, collect, and sell original digital art from world-class independent artists.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
