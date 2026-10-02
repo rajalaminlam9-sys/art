@@ -87,7 +87,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onQuickViewArtwork }) 
         </div>
 
         {/* Category Filter Buttons */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar touch-pan-x">
           {CATEGORIES.map((category) => {
             const isActive = activeCategory === category;
             return (

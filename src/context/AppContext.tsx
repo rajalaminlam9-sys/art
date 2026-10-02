@@ -72,7 +72,7 @@ interface AppContextType {
   updateArtistProfile: (artistId: string, data: Partial<ArtistProfile>) => void;
 
   // Artwork Management
-  addArtwork: (artworkData: Omit<Artwork, 'id' | 'createdAt' | 'updatedAt' | 'salesCount' | 'viewCount'>) => { success: boolean; error?: string; artworkId?: string };
+  addArtwork: (artworkData: Omit<Artwork, 'id' | 'createdAt' | 'updatedAt' | 'salesCount' | 'viewCount'> & { createdAt?: string; uploadDate?: string }) => { success: boolean; error?: string; artworkId?: string };
   updateArtwork: (id: string, updates: Partial<Artwork>) => { success: boolean; error?: string };
   deleteArtwork: (id: string) => void;
   toggleArtworkStatus: (id: string, status: 'published' | 'draft' | 'hidden') => void;
@@ -479,7 +479,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addArtwork = (
-    artworkData: Omit<Artwork, 'id' | 'createdAt' | 'updatedAt' | 'salesCount' | 'viewCount'>
+    artworkData: Omit<Artwork, 'id' | 'createdAt' | 'updatedAt' | 'salesCount' | 'viewCount'> & {
+      createdAt?: string;
+      uploadDate?: string;
+    }
   ): { success: boolean; error?: string; artworkId?: string } => {
     if (!currentUser || currentUser.role !== 'artist') {
       return { success: false, error: 'Unauthorized: Only registered artists can upload artwork.' };
@@ -494,10 +497,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const artworkId = `art_${Date.now()}`;
+    const specifiedDate = artworkData.uploadDate || artworkData.createdAt;
+    const finalCreatedAt = specifiedDate
+      ? new Date(specifiedDate).toISOString()
+      : new Date().toISOString();
+
     const newArtwork: Artwork = {
       ...artworkData,
       id: artworkId,
-      createdAt: new Date().toISOString(),
+      createdAt: finalCreatedAt,
+      uploadDate: finalCreatedAt,
       updatedAt: new Date().toISOString(),
       salesCount: 0,
       viewCount: 1,

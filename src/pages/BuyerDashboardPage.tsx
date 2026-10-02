@@ -9,6 +9,7 @@ import {
   Download,
   ShieldCheck,
 } from 'lucide-react';
+import { CarouselTabs } from '../components/CarouselTabs';
 
 export const BuyerDashboardPage: React.FC = () => {
   const {
@@ -82,56 +83,17 @@ export const BuyerDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Tab Buttons */}
-        <div className="flex items-center gap-1.5 p-1 bg-zinc-100 border border-zinc-200 rounded-xl overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('purchases')}
-            className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'purchases'
-                ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-950'
-            }`}
-          >
-            <Package className="w-3.5 h-3.5" />
-            My Purchases ({allPurchasedItems.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('wishlist')}
-            className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'wishlist'
-                ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-950'
-            }`}
-          >
-            <Heart className="w-3.5 h-3.5" />
-            Wishlist ({savedArtworks.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'orders'
-                ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-950'
-            }`}
-          >
-            <Clock className="w-3.5 h-3.5" />
-            Order History ({userOrders.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'profile'
-                ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-950'
-            }`}
-          >
-            <User className="w-3.5 h-3.5" />
-            Profile Settings
-          </button>
-        </div>
+        {/* Tab Buttons (Carousel on Mobile) */}
+        <CarouselTabs
+          tabs={[
+            { id: 'purchases', label: 'My Purchases', icon: <Package className="w-3.5 h-3.5" />, badge: allPurchasedItems.length },
+            { id: 'wishlist', label: 'Wishlist', icon: <Heart className="w-3.5 h-3.5" />, badge: savedArtworks.length },
+            { id: 'orders', label: 'Order History', icon: <Clock className="w-3.5 h-3.5" />, badge: userOrders.length },
+            { id: 'profile', label: 'Profile Settings', icon: <User className="w-3.5 h-3.5" /> },
+          ]}
+          activeTab={activeTab}
+          onChange={(tabId) => setActiveTab(tabId)}
+        />
       </div>
 
       {/* TAB 1: My Purchases with Digital Downloads */}

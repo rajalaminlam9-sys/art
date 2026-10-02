@@ -7,6 +7,7 @@ import {
   Trash2,
   Lock,
 } from 'lucide-react';
+import { CarouselTabs } from '../components/CarouselTabs';
 import { ArtistProfile } from '../types';
 
 export const AdminDashboardPage: React.FC = () => {
@@ -99,62 +100,22 @@ export const AdminDashboardPage: React.FC = () => {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-1.5 p-1 bg-zinc-100 border border-zinc-200 rounded-xl overflow-x-auto w-fit">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-            activeTab === 'overview'
-              ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-950'
-          }`}
-        >
-          Marketplace Overview
-        </button>
-        <button
-          onClick={() => setActiveTab('artists')}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-            activeTab === 'artists'
-              ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-950'
-          }`}
-        >
-          Artist Approvals & Management ({artists.length})
-          {pendingApprovals > 0 && (
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('artworks')}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-            activeTab === 'artworks'
-              ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-950'
-          }`}
-        >
-          Artwork Moderation ({artworks.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('users')}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-            activeTab === 'users'
-              ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-950'
-          }`}
-        >
-          User Accounts ({users.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('orders')}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-            activeTab === 'orders'
-              ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-950'
-          }`}
-        >
-          Transactions & Orders ({orders.length})
-        </button>
-      </div>
+      {/* Tabs (Carousel on Mobile) */}
+      <CarouselTabs
+        tabs={[
+          { id: 'overview', label: 'Marketplace Overview' },
+          {
+            id: 'artists',
+            label: 'Artist Approvals & Management',
+            badge: pendingApprovals > 0 ? `${pendingApprovals} Pending` : artists.length,
+          },
+          { id: 'artworks', label: 'Artwork Moderation', badge: artworks.length },
+          { id: 'users', label: 'User Accounts', badge: users.length },
+          { id: 'orders', label: 'Transactions & Orders', badge: orders.length },
+        ]}
+        activeTab={activeTab}
+        onChange={(tabId) => setActiveTab(tabId)}
+      />
 
       {/* 1. OVERVIEW SECTION */}
       {activeTab === 'overview' && (

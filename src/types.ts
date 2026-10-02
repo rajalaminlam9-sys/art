@@ -60,6 +60,7 @@ export interface Artwork {
   sha256Hash?: string;
   registrationNumber?: string;
   createdAt: string;
+  uploadDate?: string;
   updatedAt: string;
   status: 'published' | 'draft' | 'hidden';
   salesCount: number;

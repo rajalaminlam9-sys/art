@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { CATEGORIES } from '../services/seedData';
-import { X, UploadCloud, FileCheck, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, UploadCloud, FileCheck, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
 
 interface ArtworkUploadModalProps {
   isOpen: boolean;
@@ -15,19 +15,23 @@ export const ArtworkUploadModal: React.FC<ArtworkUploadModalProps> = ({
   const { currentArtistProfile, addArtwork } = useApp();
 
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[1] || 'Architecture');
-  const [price, setPrice] = useState('250');
-  const [tagsInput, setTagsInput] = useState('Digital Art, Archival, 8K');
+  const [description, setDescription] = useState('A single Girl in a rainy day');
+  const [category, setCategory] = useState(CATEGORIES[1] || 'Creative Artwork');
+  const [price, setPrice] = useState('80');
+  const [uploadDate, setUploadDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+  const [tagsInput, setTagsInput] = useState('Creative Artwork, Digital Art, Rainy Day');
   const [copyright, setCopyright] = useState(
-    currentArtistProfile ? `© 2026 ${currentArtistProfile.artistName}. All rights reserved.` : '© 2026. All rights reserved.'
+    currentArtistProfile ? `©2026 ${currentArtistProfile.artistName} | All Rights Reserved.` : '©2026. All Rights Reserved.'
   );
 
   const [previewImageUrl, setPreviewImageUrl] = useState('');
   const [fileName, setFileName] = useState('Master_Artwork_Export.zip');
-  const [fileResolution, setFileResolution] = useState('8192 × 4608 px (8K)');
-  const [fileFormat, setFileFormat] = useState('TIFF (16-bit uncompressed) + High-Res PNG');
-  const [fileSizeMB, setFileSizeMB] = useState(65);
+  const [fileResolution, setFileResolution] = useState('4k');
+  const [fileFormat, setFileFormat] = useState('JPG');
+  const [fileSizeMB, setFileSizeMB] = useState(45);
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -117,6 +121,8 @@ export const ArtworkUploadModal: React.FC<ArtworkUploadModalProps> = ({
       tags: parsedTags.length > 0 ? parsedTags : [category, 'Digital Art'],
       copyright: copyright.trim(),
       status: 'published',
+      uploadDate: uploadDate ? new Date(uploadDate).toISOString() : new Date().toISOString(),
+      createdAt: uploadDate ? new Date(uploadDate).toISOString() : new Date().toISOString(),
       artistId: currentArtistProfile.id,
       artistName: currentArtistProfile.artistName,
       artistEmail: currentArtistProfile.email,
@@ -170,10 +176,10 @@ export const ArtworkUploadModal: React.FC<ArtworkUploadModalProps> = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-900 mb-1">
                 Artwork Title *
               </label>
               <input
@@ -181,32 +187,29 @@ export const ArtworkUploadModal: React.FC<ArtworkUploadModalProps> = ({
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Echoes of Solitude"
+                placeholder="e.g. Rainy Day Reverie"
                 className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">
-                Curated Category *
+              <label className="block text-xs font-semibold text-zinc-900 mb-1">
+                Category *
               </label>
-              <select
+              <input
+                type="text"
+                required
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g. Creative Artwork"
                 className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900"
-              >
-                {CATEGORIES.slice(1).map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-900 mb-1">
                 Collector Price (USD) *
               </label>
               <div className="relative">
@@ -222,35 +225,92 @@ export const ArtworkUploadModal: React.FC<ArtworkUploadModalProps> = ({
                 />
               </div>
               <span className="text-[10px] text-zinc-500 mt-1 block">
-                You receive 90% net royalties on all collector sales.
+                Displayed as {price}$ on product page. You receive 90% net royalties.
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">
-                Copyright Notice *
+              <label className="block text-xs font-semibold text-zinc-900 mb-1 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-zinc-700" />
+                  Published Date *
+                </span>
+                <span className="text-[10px] text-emerald-700 font-medium">Editable</span>
+              </label>
+              <input
+                type="date"
+                required
+                value={uploadDate}
+                onChange={(e) => setUploadDate(e.target.value)}
+                className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900"
+              />
+              <span className="text-[10px] text-zinc-500 mt-1 block">
+                Displayed as Published on: {new Date(uploadDate || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-900 mb-1">
+                Format *
               </label>
               <input
                 type="text"
                 required
-                value={copyright}
-                onChange={(e) => setCopyright(e.target.value)}
-                placeholder="© 2026 Artist Name. All rights reserved."
+                value={fileFormat}
+                onChange={(e) => setFileFormat(e.target.value)}
+                placeholder="e.g. JPG, PNG, TIFF"
                 className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900"
               />
+              <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                Shown in Details (e.g. JPG)
+              </span>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-900 mb-1">
+                Resolution *
+              </label>
+              <input
+                type="text"
+                required
+                value={fileResolution}
+                onChange={(e) => setFileResolution(e.target.value)}
+                placeholder="e.g. 4k, 8k"
+                className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900"
+              />
+              <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                Shown in Details (e.g. 4k)
+              </span>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-700 mb-1">
-              Artwork Description & Concept
+            <label className="block text-xs font-semibold text-zinc-900 mb-1">
+              Description *
             </label>
             <textarea
-              rows={3}
+              rows={2}
+              required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the medium, narrative inspiration, and artistic philosophy behind this piece..."
-              className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 leading-relaxed"
+              placeholder="e.g. A single Girl in a rainy day"
+              className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs sm:text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 leading-relaxed"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-zinc-900 mb-1">
+              Copyright Notice *
+            </label>
+            <input
+              type="text"
+              required
+              value={copyright}
+              onChange={(e) => setCopyright(e.target.value)}
+              placeholder="©2026 Ema Watson | All Rights Reserved."
+              className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900"
             />
           </div>
 
@@ -309,33 +369,6 @@ export const ArtworkUploadModal: React.FC<ArtworkUploadModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">
-                Master Resolution
-              </label>
-              <input
-                type="text"
-                value={fileResolution}
-                onChange={(e) => setFileResolution(e.target.value)}
-                placeholder="e.g. 8192 × 4608 px (8K)"
-                className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">
-                Included Archive Formats
-              </label>
-              <input
-                type="text"
-                value={fileFormat}
-                onChange={(e) => setFileFormat(e.target.value)}
-                placeholder="e.g. TIFF (16-bit) + PNG"
-                className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900"
-              />
-            </div>
-          </div>
-
           <div>
             <label className="block text-xs font-medium text-zinc-700 mb-1">
               Keywords & Tags (comma separated)
@@ -344,7 +377,7 @@ export const ArtworkUploadModal: React.FC<ArtworkUploadModalProps> = ({
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="e.g. Architecture, Desert, Surrealism, Monolith"
+              placeholder="e.g. Creative Artwork, Rainy Day, Digital Painting"
               className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900 placeholder-zinc-400"
             />
           </div>

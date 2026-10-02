@@ -8,7 +8,13 @@ import {
   Eye,
   EyeOff,
   Plus,
+  Pencil,
+  Calendar,
+  X,
 } from 'lucide-react';
+import { CarouselTabs } from '../components/CarouselTabs';
+import { Artwork } from '../types';
+import { CATEGORIES } from '../services/seedData';
 
 interface ArtistDashboardPageProps {
   onOpenUploadModal: () => void;
@@ -23,12 +29,22 @@ export const ArtistDashboardPage: React.FC<ArtistDashboardPageProps> = ({
     artworks,
     orders,
     deleteArtwork,
+    updateArtwork,
     toggleArtworkStatus,
     updateArtistProfile,
     navigate,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'artworks' | 'orders' | 'profile'>('overview');
+
+  const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editUploadDate, setEditUploadDate] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editFormat, setEditFormat] = useState('JPG');
+  const [editResolution, setEditResolution] = useState('4k');
+  const [editDescription, setEditDescription] = useState('');
 
   const [artistName, setArtistName] = useState(currentArtistProfile?.artistName || '');
   const [bio, setBio] = useState(currentArtistProfile?.bio || '');
@@ -84,6 +100,39 @@ export const ArtistDashboardPage: React.FC<ArtistDashboardPageProps> = ({
       socialTwitter,
       socialInstagram,
     });
+  };
+
+  const handleStartEdit = (art: Artwork) => {
+    setEditingArtwork(art);
+    setEditTitle(art.title);
+    setEditPrice(String(art.price));
+    setEditCategory(art.category);
+    setEditDescription(art.description || '');
+    setEditFormat(art.digitalFile?.fileFormat ? art.digitalFile.fileFormat.split(' ')[0] : 'JPG');
+    setEditResolution(art.digitalFile?.resolution ? art.digitalFile.resolution.split(' ')[0] : '4k');
+    const dateStr = art.uploadDate || art.createdAt;
+    setEditUploadDate(dateStr ? new Date(dateStr).toISOString().split('T')[0] : '');
+  };
+
+  const handleSaveArtworkEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingArtwork) return;
+    const numPrice = parseFloat(editPrice) || editingArtwork.price;
+    const finalDate = editUploadDate ? new Date(editUploadDate).toISOString() : editingArtwork.createdAt;
+    updateArtwork(editingArtwork.id, {
+      title: editTitle.trim() || editingArtwork.title,
+      price: numPrice,
+      category: editCategory || editingArtwork.category,
+      description: editDescription.trim() || editingArtwork.description,
+      createdAt: finalDate,
+      uploadDate: finalDate,
+      digitalFile: {
+        ...editingArtwork.digitalFile,
+        fileFormat: editFormat || editingArtwork.digitalFile.fileFormat,
+        resolution: editResolution || editingArtwork.digitalFile.resolution,
+      },
+    });
+    setEditingArtwork(null);
   };
 
   return (
@@ -170,49 +219,17 @@ export const ArtistDashboardPage: React.FC<ArtistDashboardPageProps> = ({
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex items-center gap-1.5 p-1 bg-zinc-100 border border-zinc-200 rounded-xl overflow-x-auto w-fit">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-            activeTab === 'overview'
-              ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-950'
-          }`}
-        >
-          Studio Overview
-        </button>
-        <button
-          onClick={() => setActiveTab('artworks')}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-            activeTab === 'artworks'
-              ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-950'
-          }`}
-        >
-          Artwork Management ({myArtworks.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('orders')}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-            activeTab === 'orders'
-              ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-950'
-          }`}
-        >
-          Sales & Orders ({artistOrders.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('profile')}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-            activeTab === 'profile'
-              ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-950'
-          }`}
-        >
-          Artist Profile
-        </button>
-      </div>
+      {/* Tab Navigation (Carousel on Mobile with Touch & Tap Controls) */}
+      <CarouselTabs
+        tabs={[
+          { id: 'overview', label: 'Studio Overview' },
+          { id: 'artworks', label: 'Artwork Management', badge: myArtworks.length },
+          { id: 'orders', label: 'Sales & Orders', badge: artistOrders.length },
+          { id: 'profile', label: 'Artist Profile' },
+        ]}
+        activeTab={activeTab}
+        onChange={(tabId) => setActiveTab(tabId)}
+      />
 
       {/* TAB 1: STUDIO OVERVIEW */}
       {activeTab === 'overview' && (
@@ -415,6 +432,14 @@ export const ArtistDashboardPage: React.FC<ArtistDashboardPageProps> = ({
                             )}
 
                             <button
+                              onClick={() => handleStartEdit(art)}
+                              className="p-1.5 text-zinc-500 hover:text-zinc-950 transition-colors rounded hover:bg-zinc-100"
+                              title="Edit Artwork Details & Upload Date"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+
+                            <button
                               onClick={() => deleteArtwork(art.id)}
                               className="p-1.5 text-zinc-500 hover:text-rose-600 transition-colors rounded hover:bg-zinc-100"
                               title="Delete Artwork"
@@ -585,6 +610,145 @@ export const ArtistDashboardPage: React.FC<ArtistDashboardPageProps> = ({
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Edit Artwork Modal Dialog */}
+      {editingArtwork && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/50 transition-opacity"
+            onClick={() => setEditingArtwork(null)}
+          />
+          <div className="relative w-full max-w-md bg-white border border-zinc-200 rounded-2xl p-6 text-zinc-900 z-10 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-emerald-600" />
+                <h3 className="text-base font-bold text-zinc-950">Edit Artwork Details</h3>
+              </div>
+              <button
+                onClick={() => setEditingArtwork(null)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-950 hover:bg-zinc-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveArtworkEdit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">Artwork Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">Price (USD) *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900 font-mono tabular-nums focus:outline-none focus:border-zinc-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">Category *</label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-lg px-2 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  >
+                    {CATEGORIES.slice(1).map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">Format *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormat}
+                    onChange={(e) => setEditFormat(e.target.value)}
+                    placeholder="e.g. JPG, PNG"
+                    className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">Resolution *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editResolution}
+                    onChange={(e) => setEditResolution(e.target.value)}
+                    placeholder="e.g. 4k, 8k"
+                    className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="e.g. A single Girl in a rainy day"
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-zinc-700 mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                    Published Date *
+                  </span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Editable</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={editUploadDate}
+                  onChange={(e) => setEditUploadDate(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                />
+                <span className="text-[10px] text-zinc-500 mt-1 block">
+                  Modify the &quot;Published on: [Date]&quot; displayed on the single product page.
+                </span>
+              </div>
+
+              <div className="pt-3 border-t border-zinc-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingArtwork(null)}
+                  className="px-3.5 py-1.5 text-xs text-zinc-600 hover:text-zinc-950"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold shadow-xs"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
