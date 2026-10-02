@@ -15,6 +15,21 @@ import {
   INITIAL_ORDERS,
 } from '../services/seedData';
 import { parseCurrentLocation, buildUrlForView } from '../utils/urlRouter';
+import {
+  db,
+  testConnection,
+  seedFirestoreIfEmpty,
+  saveArtworkDoc,
+  removeArtworkDoc,
+  saveArtistDoc,
+  saveOrderDoc,
+  saveUserDoc,
+  handleFirestoreError,
+  OperationType,
+  signInWithGoogle,
+  signOutFirebase,
+} from '../services/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 
 export type NavigationTarget =
   | 'home'
@@ -58,6 +73,7 @@ interface AppContextType {
 
   // Auth
   login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   loginWithDemo: (role: UserRole, status?: ArtistStatus) => void;
   register: (data: {
     name: string;
@@ -238,6 +254,90 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => window.removeEventListener('popstate', handlePopState);
   }, [artworks, artists]);
 
+  // Real-time synchronization with Firestore (Database)
+  useEffect(() => {
+    // 1. Validate connection to Firestore per SKILL.md
+    testConnection();
+
+    // 2. Initial seed into Firestore if collections are empty
+    seedFirestoreIfEmpty();
+
+    // 3. Listen to real-time changes in artworks collection
+    const unsubArtworks = onSnapshot(
+      collection(db, 'artworks'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const loaded: Artwork[] = [];
+          snapshot.forEach((docSnap) => {
+            loaded.push(docSnap.data() as Artwork);
+          });
+          setArtworks(loaded);
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'artworks');
+      }
+    );
+
+    // 4. Listen to real-time changes in artists collection
+    const unsubArtists = onSnapshot(
+      collection(db, 'artists'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const loaded: ArtistProfile[] = [];
+          snapshot.forEach((docSnap) => {
+            loaded.push(docSnap.data() as ArtistProfile);
+          });
+          setArtists(loaded);
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'artists');
+      }
+    );
+
+    // 5. Listen to real-time changes in orders collection
+    const unsubOrders = onSnapshot(
+      collection(db, 'orders'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const loaded: Order[] = [];
+          snapshot.forEach((docSnap) => {
+            loaded.push(docSnap.data() as Order);
+          });
+          setOrders(loaded);
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'orders');
+      }
+    );
+
+    // 6. Listen to real-time changes in users collection
+    const unsubUsers = onSnapshot(
+      collection(db, 'users'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const loaded: User[] = [];
+          snapshot.forEach((docSnap) => {
+            loaded.push(docSnap.data() as User);
+          });
+          setUsers(loaded);
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'users');
+      }
+    );
+
+    return () => {
+      unsubArtworks();
+      unsubArtists();
+      unsubOrders();
+      unsubUsers();
+    };
+  }, []);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
   }, [users]);
@@ -413,6 +513,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setUsers((prev) => [...prev, newUser]);
+    saveUserDoc(newUser);
 
     if (data.role === 'artist') {
       const artistId = `artist_${Date.now()}`;
@@ -431,6 +532,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         totalEarnings: 0,
       };
       setArtists((prev) => [...prev, newArtist]);
+      saveArtistDoc(newArtist);
     }
 
     setCurrentUser(newUser);
@@ -453,7 +555,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
+  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+    const res = await signInWithGoogle();
+    if (res.success && res.user) {
+      setCurrentUser(res.user);
+      setUsers((prev) => {
+        const exists = prev.some((u) => u.id === res.user!.id);
+        return exists
+          ? prev.map((u) => (u.id === res.user!.id ? res.user! : u))
+          : [...prev, res.user!];
+      });
+      addToast({
+        type: 'success',
+        title: `Welcome, ${res.user.name}!`,
+        message: 'Signed in with Google successfully.',
+      });
+      return { success: true };
+    } else {
+      return { success: false, error: res.error || 'Google sign-in could not be completed.' };
+    }
+  };
+
   const logout = () => {
+    signOutFirebase();
     setCurrentUser(null);
     addToast({
       type: 'info',
@@ -468,12 +592,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updated = { ...currentUser, ...data };
     setCurrentUser(updated);
     setUsers((prev) => prev.map((u) => (u.id === currentUser.id ? updated : u)));
+    saveUserDoc(updated);
     addToast({ type: 'success', title: 'Profile Updated' });
   };
 
   const updateArtistProfile = (artistId: string, data: Partial<ArtistProfile>) => {
     setArtists((prev) =>
-      prev.map((a) => (a.id === artistId ? { ...a, ...data } : a))
+      prev.map((a) => {
+        if (a.id === artistId) {
+          const updated = { ...a, ...data };
+          saveArtistDoc(updated);
+          return updated;
+        }
+        return a;
+      })
     );
     addToast({ type: 'success', title: 'Artist Profile Updated' });
   };
@@ -516,11 +648,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setArtworks((prev) => [newArtwork, ...prev]);
+    saveArtworkDoc(newArtwork);
 
     setArtists((prev) =>
-      prev.map((a) =>
-        a.id === artistProf.id ? { ...a, totalArtworks: a.totalArtworks + 1 } : a
-      )
+      prev.map((a) => {
+        if (a.id === artistProf.id) {
+          const updated = { ...a, totalArtworks: a.totalArtworks + 1 };
+          saveArtistDoc(updated);
+          return updated;
+        }
+        return a;
+      })
     );
 
     addToast({
@@ -538,6 +676,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const updated = { ...target, ...updates, updatedAt: new Date().toISOString() };
     setArtworks((prev) => prev.map((a) => (a.id === id ? updated : a)));
+    saveArtworkDoc(updated);
     addToast({ type: 'success', title: 'Artwork Updated' });
     return { success: true };
   };
@@ -545,12 +684,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteArtwork = (id: string) => {
     setArtworks((prev) => prev.filter((a) => a.id !== id));
     setCart((prev) => prev.filter((item) => item.artwork.id !== id));
+    removeArtworkDoc(id);
     addToast({ type: 'info', title: 'Artwork Removed' });
   };
 
   const toggleArtworkStatus = (id: string, status: 'published' | 'draft' | 'hidden') => {
     setArtworks((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status, updatedAt: new Date().toISOString() } : a))
+      prev.map((a) => {
+        if (a.id === id) {
+          const updated = { ...a, status, updatedAt: new Date().toISOString() };
+          saveArtworkDoc(updated);
+          return updated;
+        }
+        return a;
+      })
     );
     addToast({ type: 'info', title: `Status changed to ${status}` });
   };
@@ -565,15 +712,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!artistToApprove) return;
 
     setArtists((prev) =>
-      prev.map((a) =>
-        a.id === artistId
-          ? { ...a, status: 'approved', approvedAt: new Date().toISOString(), rejectionReason: undefined }
-          : a
-      )
+      prev.map((a) => {
+        if (a.id === artistId) {
+          const updated = {
+            ...a,
+            status: 'approved' as const,
+            approvedAt: new Date().toISOString(),
+            rejectionReason: undefined,
+          };
+          saveArtistDoc(updated);
+          return updated;
+        }
+        return a;
+      })
     );
 
     setUsers((prev) =>
-      prev.map((u) => (u.id === artistToApprove.userId ? { ...u, status: 'approved' } : u))
+      prev.map((u) => {
+        if (u.id === artistToApprove.userId) {
+          const updated = { ...u, status: 'approved' as const };
+          saveUserDoc(updated);
+          return updated;
+        }
+        return u;
+      })
     );
 
     if (currentUser?.id === artistToApprove.userId) {
@@ -594,15 +756,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!artist) return;
 
     setArtists((prev) =>
-      prev.map((a) =>
-        a.id === artistId
-          ? { ...a, status: 'rejected', rejectionReason: reason || 'Application did not meet current curation standards.' }
-          : a
-      )
+      prev.map((a) => {
+        if (a.id === artistId) {
+          const updated = {
+            ...a,
+            status: 'rejected' as const,
+            rejectionReason: reason || 'Application did not meet current curation standards.',
+          };
+          saveArtistDoc(updated);
+          return updated;
+        }
+        return a;
+      })
     );
 
     setUsers((prev) =>
-      prev.map((u) => (u.id === artist.userId ? { ...u, status: 'rejected' } : u))
+      prev.map((u) => {
+        if (u.id === artist.userId) {
+          const updated = { ...u, status: 'rejected' as const };
+          saveUserDoc(updated);
+          return updated;
+        }
+        return u;
+      })
     );
 
     addToast({
@@ -618,10 +794,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!artist) return;
 
     setArtists((prev) =>
-      prev.map((a) => (a.id === artistId ? { ...a, status: 'suspended' } : a))
+      prev.map((a) => {
+        if (a.id === artistId) {
+          const updated = { ...a, status: 'suspended' as const };
+          saveArtistDoc(updated);
+          return updated;
+        }
+        return a;
+      })
     );
     setUsers((prev) =>
-      prev.map((u) => (u.id === artist.userId ? { ...u, status: 'suspended' } : u))
+      prev.map((u) => {
+        if (u.id === artist.userId) {
+          const updated = { ...u, status: 'suspended' as const };
+          saveUserDoc(updated);
+          return updated;
+        }
+        return u;
+      })
     );
 
     addToast({
@@ -637,10 +827,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!artist) return;
 
     setArtists((prev) =>
-      prev.map((a) => (a.id === artistId ? { ...a, status: 'approved' } : a))
+      prev.map((a) => {
+        if (a.id === artistId) {
+          const updated = { ...a, status: 'approved' as const };
+          saveArtistDoc(updated);
+          return updated;
+        }
+        return a;
+      })
     );
     setUsers((prev) =>
-      prev.map((u) => (u.id === artist.userId ? { ...u, status: 'approved' } : u))
+      prev.map((u) => {
+        if (u.id === artist.userId) {
+          const updated = { ...u, status: 'approved' as const };
+          saveUserDoc(updated);
+          return updated;
+        }
+        return u;
+      })
     );
 
     addToast({
@@ -748,12 +952,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setOrders((prev) => [newOrder, ...prev]);
+    saveOrderDoc(newOrder);
 
     setArtworks((prev) =>
       prev.map((art) => {
         const matching = orderItems.find((item) => item.artworkId === art.id);
         if (matching) {
-          return { ...art, salesCount: art.salesCount + 1 };
+          const updated = { ...art, salesCount: art.salesCount + 1 };
+          saveArtworkDoc(updated);
+          return updated;
         }
         return art;
       })
@@ -764,11 +971,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const salesForArtist = orderItems.filter((i) => i.artistId === artist.id);
         if (salesForArtist.length > 0) {
           const revenueDelta = salesForArtist.reduce((sum, item) => sum + item.price, 0);
-          return {
+          const updated = {
             ...artist,
             totalSales: artist.totalSales + salesForArtist.length,
             totalEarnings: artist.totalEarnings + Math.round(revenueDelta * 0.9),
           };
+          saveArtistDoc(updated);
+          return updated;
         }
         return artist;
       })
@@ -897,6 +1106,7 @@ store the high-resolution digital master file.
         navigate,
         setSearchQuery,
         login,
+        loginWithGoogle,
         loginWithDemo,
         register,
         logout,

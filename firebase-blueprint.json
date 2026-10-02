@@ -1,0 +1,111 @@
+{
+  "entities": {
+    "Artwork": {
+      "title": "Artwork",
+      "description": "Certified digital master artwork item in the marketplace",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "artistId": { "type": "string" },
+        "artistName": { "type": "string" },
+        "artistEmail": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "previewImage": { "type": "string" },
+        "digitalFile": { "type": "object" },
+        "price": { "type": "number" },
+        "currency": { "type": "string" },
+        "category": { "type": "string" },
+        "tags": { "type": "array" },
+        "copyright": { "type": "string" },
+        "registrationNumber": { "type": "string" },
+        "sha256Hash": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "uploadDate": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "status": { "type": "string", "enum": ["published", "draft", "hidden"] },
+        "salesCount": { "type": "number" },
+        "viewCount": { "type": "number" },
+        "featured": { "type": "boolean" }
+      },
+      "required": ["id", "artistId", "artistName", "title", "price", "status"]
+    },
+    "ArtistProfile": {
+      "title": "ArtistProfile",
+      "description": "Registered artist portfolio and verification records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "artistName": { "type": "string" },
+        "email": { "type": "string" },
+        "bio": { "type": "string" },
+        "location": { "type": "string" },
+        "website": { "type": "string" },
+        "socialTwitter": { "type": "string" },
+        "socialInstagram": { "type": "string" },
+        "profileImage": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string" },
+        "approvedAt": { "type": "string" },
+        "totalArtworks": { "type": "number" },
+        "totalSales": { "type": "number" },
+        "totalEarnings": { "type": "number" }
+      },
+      "required": ["id", "artistName", "email", "status"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Collector purchase and archival certificate receipt",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "buyerId": { "type": "string" },
+        "buyerName": { "type": "string" },
+        "buyerEmail": { "type": "string" },
+        "items": { "type": "array" },
+        "totalAmount": { "type": "number" },
+        "currency": { "type": "string" },
+        "paymentStatus": { "type": "string", "enum": ["paid", "pending", "failed"] },
+        "paymentMethod": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "downloadStatus": { "type": "string", "enum": ["available", "downloaded", "expired"] }
+      },
+      "required": ["id", "buyerId", "totalAmount", "paymentStatus"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Marketplace member profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["buyer", "artist", "admin"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string" },
+        "profileImage": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/artworks/{artworkId}": {
+      "schema": { "$ref": "#/entities/Artwork" },
+      "description": "Public catalog and metadata for all published and artist submitted artworks"
+    },
+    "/artists/{artistId}": {
+      "schema": { "$ref": "#/entities/ArtistProfile" },
+      "description": "Public profiles and accreditation status of independent artists"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Purchase transaction records and archival download licenses"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User account registration and access credentials"
+    }
+  }
+}

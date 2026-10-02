@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Test connection doc
+    match /test/{testId} {
+      allow read, write: if true;
+    }
+
+    // Public Artworks Catalog
+    match /artworks/{artworkId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Artist Profiles
+    match /artists/{artistId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Orders & Transactions
+    match /orders/{orderId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if true;
+    }
+
+    // Users
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
