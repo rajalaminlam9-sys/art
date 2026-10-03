@@ -10,6 +10,9 @@ import {
   ArrowRight,
   AlertCircle,
   Sparkles,
+  Copy,
+  Check,
+  ExternalLink,
 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -28,6 +31,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>(initialMode);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [copiedDomain, setCopiedDomain] = useState(false);
+
+  const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isUnauthorizedDomain = Boolean(
+    errorMessage &&
+      (errorMessage.includes('unauthorized-domain') ||
+        errorMessage.includes('auth/unauthorized-domain'))
+  );
+
+  const handleCopyHostname = () => {
+    if (navigator.clipboard && currentHostname) {
+      navigator.clipboard.writeText(currentHostname);
+      setCopiedDomain(true);
+      setTimeout(() => setCopiedDomain(false), 2500);
+    }
+  };
 
   // Form Fields
   const [name, setName] = useState('');
@@ -253,12 +272,56 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
 
-        {/* Error Notification */}
+        {/* Error Notification / Unauthorized Domain Helper */}
         {errorMessage && (
-          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{errorMessage}</span>
-          </div>
+          isUnauthorizedDomain ? (
+            <div className="mb-5 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2.5 text-zinc-900 shadow-2xs">
+              <div className="flex items-start gap-2 text-amber-900 font-bold">
+                <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                <span>ডোমেইন অনুমোদন প্রয়োজন (Authorized Domain Required)</span>
+              </div>
+              <p className="text-zinc-600 text-[11px] leading-relaxed">
+                নিরাপত্তার স্বার্থে Firebase শুধুমাত্র অনুমোদিত ডোমেইন থেকেই Google Sign-In গ্রহণ করে। নিচের ডোমেইনটি কপি করে আপনার Firebase Console-এ যুক্ত করুন:
+              </p>
+              
+              <div className="flex items-center justify-between gap-2 p-2 bg-white rounded-xl border border-amber-200/80 text-xs font-mono text-zinc-800">
+                <span className="truncate select-all font-semibold text-[11px]">{currentHostname}</span>
+                <button
+                  type="button"
+                  onClick={handleCopyHostname}
+                  className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-[11px] font-semibold flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                >
+                  {copiedDomain ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-600" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      Copy Domain
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="pt-0.5 flex items-center justify-between text-[11px]">
+                <a
+                  href="https://console.firebase.google.com/project/artnova-bd1b7/authentication/settings"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-amber-800 hover:text-amber-950 font-semibold underline inline-flex items-center gap-1"
+                >
+                  Firebase Authorized Domains সেটিংস খুলুন <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{errorMessage}</span>
+            </div>
+          )
         )}
 
         {/* Mode: Login */}
